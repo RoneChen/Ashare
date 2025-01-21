@@ -2,39 +2,9 @@ from Ashare import get_price
 from MyTT import *
 import matplotlib.pyplot as plt
 from tabulate import tabulate
+from read_bank import get_bank_code
 
-
-days = 320                      # the number of days to get the price, the income calculation is base on (days-20)
-count = 100                     # the number of stocks to buy
-strategy_5 = True               # enable the MA5 strategy
-strategy_10 = True              # enable the MA10 strategy
-strategy_20 = True              # enable the MA20 strategy
-
-def get_market(code_string):
-    market_code_dict = {
-        "600": "sh",  # 沪市A股
-        "601": "sh",  # 沪市A股
-        "603": "sh",  # 沪市A股
-        "605": "sh",  # 沪市A股
-        "000": "sz",  # 深市A股
-        "001": "sz",  # 深市A股
-        "003": "sz",  # 深市A股
-        "688": "IB",  # 科创板
-        "300": "sz",  # 创业板（旧）
-        "301": "sz",  # 创业板
-        "002": "sz",  # 中小板
-    }
-    return market_code_dict.get(code_string[:3], None) + code_string
-
-stock_id = get_market('601988')
-print(stock_id)
-
-# get the price
-df = get_price(stock_id, frequency='1d', count=days)
-
-# print(df.values[-1])          # used to check the stock correctness
-
-def MA_strategys(stock_id, df):
+def MA_strategys(stock_id, df, count):
     # get the close, open, high, low price
     close = df.close.values
     open = df.open.values
@@ -120,33 +90,62 @@ def MA_strategys(stock_id, df):
             
             last_MA20 = row['MA20']
     
-    return [f"{stock_id}", f"¥{total_income_MA5:.2f}",  f"¥{total_income_MA10:.2f}", f"¥{total_income_MA20:.2f}"], [f"{stock_id}", f"{(total_income_MA5*100 / cost):.2f}%",  f"{(total_income_MA10*100 / cost):.2f}%", f"{(total_income_MA20*100 / cost):.2f}%"], cost
+    return [f"{stock_id}", f"¥{total_income_MA5:.2f}",  f"¥{total_income_MA10:.2f}", f"¥{total_income_MA20:.2f}", f"{(total_income_MA5*100 / cost):.2f}%",  f"{(total_income_MA10*100 / cost):.2f}%", f"{(total_income_MA20*100 / cost):.2f}%"], cost
+
+def get_market(code_string):
+    market_code_dict = {
+        "600": "sh",  # 沪市A股
+        "601": "sh",  # 沪市A股
+        "603": "sh",  # 沪市A股
+        "605": "sh",  # 沪市A股
+        "000": "sz",  # 深市A股
+        "001": "sz",  # 深市A股
+        "003": "sz",  # 深市A股
+        "688": "ib",  # 科创板
+        "300": "sz",  # 创业板（旧）
+        "301": "sz",  # 创业板
+        "002": "sz",  # 中小板
+    }
+    return market_code_dict.get(code_string[:3], None) + code_string
+
+days = 320                      # the number of days to get the price, the income calculation is base on (days-20)
+count = 100                     # the number of stocks to buy
+strategy_5 = True               # enable the MA5 strategy
+strategy_10 = True              # enable the MA10 strategy
+strategy_20 = True              # enable the MA20 strategy
+
+# get the stock code
+stock_ids = get_bank_code()
+
+for stock_id in stock_ids:
+    stock_id = get_market(stock_id)
+    print(stock_id)
+
+    # get the price
+    df = get_price(stock_id, frequency='1d', count=days)
+
+    # print(df.values[-1])          # used to check the stock correctness
 
 
+    # Data to be displayed in the table
+    values = []
+    rois = []
 
-# Data to be displayed in the table
-values = []
-rois = []
+    value, cost = MA_strategys(stock_id, df, count)
 
-value, roi, cost = MA_strategys(stock_id, df)
+    values.append(value)
 
-values.append(value)
-rois.append(roi)
+    # Column headers
+    headers_values = ["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"]
 
-# Column headers
-headers_values = ["Stock", "MA5", "MA10", "MA20"]
-heasers_rois = ["Stock", "MA5", "MA10", "MA20"]
+    # Create the markdown table
+    markdown_table_values = tabulate(values, headers_values, tablefmt="github", numalign="right", stralign="center")
 
-# Create the markdown table
-markdown_table_values = tabulate(values, headers_values, tablefmt="github", numalign="right", stralign="center")
-markdown_table_rois = tabulate(rois, heasers_rois, tablefmt="github", numalign="right", stralign="center")
+    # Print the markdown table
+    print(f"(days: {days}, count: {count}, cost: ¥{cost})")
+    print("\nValue-ROI")
+    print(markdown_table_values)
 
-# Print the markdown table
-print(f"(days: {days}, count: {count}, cost: ¥{cost})")
-print("\nValue")
-print(markdown_table_values)
-print("\nROI")
-print(markdown_table_rois)
 
 
 # ------------------------- Plotting the Data -------------------------
