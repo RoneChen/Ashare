@@ -5,6 +5,9 @@ from tabulate import tabulate
 from read_bank import get_bank_code
 
 def MA_strategys(stock_id, df, count):
+    '''
+    This function calculates the MA strategy for a given stock and count of stocks.
+    '''
     # get the close, open, high, low price
     close = df.close.values
     open = df.open.values
@@ -93,6 +96,9 @@ def MA_strategys(stock_id, df, count):
     return [f"{stock_id}", f"¥{total_income_MA5:.2f}",  f"¥{total_income_MA10:.2f}", f"¥{total_income_MA20:.2f}", f"{(total_income_MA5*100 / cost):.2f}%",  f"{(total_income_MA10*100 / cost):.2f}%", f"{(total_income_MA20*100 / cost):.2f}%"], cost
 
 def get_market(code_string):
+    '''
+    get the market code of the given stock code.
+    '''
     market_code_dict = {
         "600": "sh",  # 沪市A股
         "601": "sh",  # 沪市A股
@@ -108,6 +114,8 @@ def get_market(code_string):
     }
     return market_code_dict.get(code_string[:3], None) + code_string
 
+
+# ------------------------- Main -------------------------
 days = 320                      # the number of days to get the price, the income calculation is base on (days-20)
 count = 100                     # the number of stocks to buy
 strategy_5 = True               # enable the MA5 strategy
