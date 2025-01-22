@@ -40,9 +40,11 @@ def MA_strategys(stock_id, df, count):
     flag_MA5 = 1            # 0: above, 1: below
     flag_MA10 = 1           # 0: above, 1: below
     flag_MA20 = 1           # 0: above, 1: below
+    flag_golden_cross = 1   # 0: above, 1: below
     total_income_MA20 = 0   # total income of MA20 strategy
     total_income_MA10 = 0   # total income of MA10 strategy
     total_income_MA5 = 0    # total income of MA5 strategy
+    total_golden_cross = 0  # total income of Golden Death Cross strategy
 
     # Loop through each row
     for index, row in df.tail(days-20).iterrows():
@@ -85,18 +87,35 @@ def MA_strategys(stock_id, df, count):
             if row['close'] > last_MA20 and flag_MA20 == 1:
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA20 buy: {row['date']}")
-                total_income_MA20 -= row['close'] * count
+                total_golden_cross -= row['close'] * count
                 flag_MA20 = 0
             
             if row['close'] < last_MA20 and flag_MA20 == 0:
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA20 sell: {row['date']}")
-                total_income_MA20 += row['close'] * count
+                total_golden_cross += row['close'] * count
                 flag_MA20 = 1
             
             last_MA20 = row['MA20']
+
+        
+        #------------------------- Strategy Golden Death Cross-------------------------
+        if strategy_golden_death_cross:
+            if row['MA10'] < row['MA20'] and flag_golden_cross == 1:
+                # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
+                # print(f"MA20 buy: {row['date']}")
+                total_income_golden_cross += row['close'] * count
+                flag_golden_cross = 0
+            
+            if row['MA10'] > row['MA20'] and flag_golden_cross == 0:
+                # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
+                # print(f"MA20 sell: {row['date']}")
+                total_income_golden_cross -= row['close'] * count
+                flag_golden_cross = 1
+            
+            last_MA20 = row['MA20']
     
-    return [f"{stock_id}", f"¥{total_income_MA5:.2f}",  f"¥{total_income_MA10:.2f}", f"¥{total_income_MA20:.2f}", f"{(total_income_MA5*100 / cost):.2f}%",  f"{(total_income_MA10*100 / cost):.2f}%", f"{(total_income_MA20*100 / cost):.2f}%"], cost
+    return [stock_id, round(total_income_MA5, 2), round(total_income_MA10, 2), round(total_income_MA20, 2), round(total_income_MA5*100 / cost, 2), round(total_income_MA10*100 / cost, 2), round(total_income_MA20*100 / cost, 2)], cost
 
 def get_market(code_string):
     '''
@@ -124,6 +143,7 @@ count = 100                     # the number of stocks to buy
 strategy_5 = True               # enable the MA5 strategy
 strategy_10 = True              # enable the MA10 strategy
 strategy_20 = True              # enable the MA20 strategy
+strategy_golden_death_cross = True  # enable the Golden Death Cross strategy
 
 # get the stock code
 stock_ids = get_bank_code()
@@ -152,18 +172,7 @@ for stock_id in tqdm(stock_ids):
 
     time.sleep(1)
 
-# Column headers
-headers_values = ["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"]
-
-# Create the markdown table
-markdown_table_values = tabulate(values, headers_values, tablefmt="github", numalign="right", stralign="center")
-
-# Print the markdown table
-print(f"(days: {days}, count: {count}, cost: ¥{cost})")
-print("\nValue-ROI")
-print(markdown_table_values)
-
-wb.save("MA_strategys.xlsx")
+wb.save("/Users/ronechen/Rone_Chen/Investment/Ashare/results/MA_strategys.xlsx")
 
 
 
