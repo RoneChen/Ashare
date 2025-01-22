@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate
 from read_bank import get_bank_code
 import time
+from openpyxl import Workbook
+from tqdm import tqdm
 
 def MA_strategys(stock_id, df, count):
     '''
@@ -130,9 +132,15 @@ stock_ids = get_bank_code()
 values = []
 rois = []
 
-for stock_id in stock_ids:
+# set excel header
+wb = Workbook()
+# values.append(["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"])
+ws = wb.active
+ws.title = "MA_strategys"
+ws.append(["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"])
+
+for stock_id in tqdm(stock_ids):
     stock_id = get_market(stock_id)
-    print(stock_id)
 
     # get the price
     df = get_price(stock_id, frequency='1d', count=days)
@@ -140,7 +148,7 @@ for stock_id in stock_ids:
     # print(df.values[-1])          # used to check the stock correctness
 
     value, cost = MA_strategys(stock_id, df, count)
-    values.append(value)
+    ws.append(value)
 
     time.sleep(1)
 
@@ -154,6 +162,9 @@ markdown_table_values = tabulate(values, headers_values, tablefmt="github", numa
 print(f"(days: {days}, count: {count}, cost: ¥{cost})")
 print("\nValue-ROI")
 print(markdown_table_values)
+
+wb.save("MA_strategys.xlsx")
+
 
 
 
