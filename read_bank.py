@@ -1,16 +1,19 @@
 import os
 
-def get_bank_code():
-    file = open('/Users/ronechen/Rone_Chen/Investment/bank.txt', 'r')
+def get_stock_code(path):
+    file = open(path, 'r')
     lines = file.readlines()
 
-    bank_codes = []
+    stock_codes = []
 
     for line in lines:
-        bank_code = line.strip().split('\t')[0]
-        bank_codes.append(bank_code)
+        stock_code = line.strip().split('\t')[0]
+        if len(stock_code) > 6:
+            stock_code = line.strip().split(' ')[0]
+        stock_codes.append(stock_code)
 
-    return bank_codes
+    file.close()
+    return stock_codes
 
-bank = get_bank_code()
-print(bank)
+stock_codes = get_stock_code('/Volumes/Rone_Chen/投资/Ashare/stocks/my_stocks.txt')
+print(stock_codes)

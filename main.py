@@ -172,6 +172,7 @@ for stock_id in tqdm(stock_ids):
 
     time.sleep(1)
 
+
 wb.save("/Users/ronechen/Rone_Chen/Investment/Ashare/results/MA_strategys.xlsx")
 
 
