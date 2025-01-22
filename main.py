@@ -3,6 +3,7 @@ from MyTT import *
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 from read_bank import get_bank_code
+import time
 
 def MA_strategys(stock_id, df, count):
     '''
@@ -125,6 +126,10 @@ strategy_20 = True              # enable the MA20 strategy
 # get the stock code
 stock_ids = get_bank_code()
 
+# Data to be displayed in the table
+values = []
+rois = []
+
 for stock_id in stock_ids:
     stock_id = get_market(stock_id)
     print(stock_id)
@@ -134,25 +139,21 @@ for stock_id in stock_ids:
 
     # print(df.values[-1])          # used to check the stock correctness
 
-
-    # Data to be displayed in the table
-    values = []
-    rois = []
-
     value, cost = MA_strategys(stock_id, df, count)
-
     values.append(value)
 
-    # Column headers
-    headers_values = ["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"]
+    time.sleep(1)
 
-    # Create the markdown table
-    markdown_table_values = tabulate(values, headers_values, tablefmt="github", numalign="right", stralign="center")
+# Column headers
+headers_values = ["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"]
 
-    # Print the markdown table
-    print(f"(days: {days}, count: {count}, cost: ¥{cost})")
-    print("\nValue-ROI")
-    print(markdown_table_values)
+# Create the markdown table
+markdown_table_values = tabulate(values, headers_values, tablefmt="github", numalign="right", stralign="center")
+
+# Print the markdown table
+print(f"(days: {days}, count: {count}, cost: ¥{cost})")
+print("\nValue-ROI")
+print(markdown_table_values)
 
 
 
