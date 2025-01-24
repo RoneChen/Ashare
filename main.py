@@ -46,6 +46,10 @@ def MA_strategys(stock_id, df, count):
     total_income_MA5 = 0    # total income of MA5 strategy
     total_golden_cross = 0  # total income of Golden Death Cross strategy
 
+    operations_MA5 = []         # buy or sell operations
+    operations_MA10 = []        # buy or sell operations
+    operations_MA20 = []        # buy or sell operations
+
     # Loop through each row
     for index, row in df.tail(days-20).iterrows():
         # print(f"{row['date']} {row['open']: >10.2f} {row['close']: >10.2f} {row['MA5']: >10.4f} {row['MA10']: >10.4f} {row['MA20']: >10.4f}")
@@ -53,12 +57,14 @@ def MA_strategys(stock_id, df, count):
         #------------------------- Strategy MA5-------------------------
         if strategy_5:
             if row['close'] > last_MA5 and flag_MA5 == 1:
+                operations_MA5.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA5 buy: {row['date']}")
                 total_income_MA5 += row['close'] * count
                 flag_MA5 = 0
             
             if row['close'] < last_MA5 and flag_MA5 == 0:
+                operations_MA5.append(f"sell, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA5 sell: {row['date']}")
                 total_income_MA5 -= row['close'] * count
@@ -69,12 +75,14 @@ def MA_strategys(stock_id, df, count):
         #------------------------- Strategy MA10-------------------------
         if strategy_10:
             if row['close'] > last_MA10 and flag_MA10 == 1:
+                operations_MA10.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA10 buy: {row['date']}")
                 total_income_MA10 += row['close'] * count
                 flag_MA10 = 0
             
             if row['close'] < last_MA10 and flag_MA10 == 0:
+                operations_MA10.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA10 sell: {row['date']}")
                 total_income_MA10 -= row['close'] * count
@@ -85,12 +93,14 @@ def MA_strategys(stock_id, df, count):
         #------------------------- Strategy MA20-------------------------
         if strategy_20:
             if row['close'] > last_MA20 and flag_MA20 == 1:
+                operations_MA20.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA20 buy: {row['date']}")
                 total_golden_cross -= row['close'] * count
                 flag_MA20 = 0
             
             if row['close'] < last_MA20 and flag_MA20 == 0:
+                operations_MA20.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA20 sell: {row['date']}")
                 total_golden_cross += row['close'] * count
@@ -115,7 +125,7 @@ def MA_strategys(stock_id, df, count):
             
             last_MA20 = row['MA20']
     
-    return [stock_id, round(total_income_MA5, 2), round(total_income_MA10, 2), round(total_income_MA20, 2), round(total_income_MA5*100 / cost, 2), round(total_income_MA10*100 / cost, 2), round(total_income_MA20*100 / cost, 2)], cost
+    return [stock_id, round(total_income_MA5, 2), round(total_income_MA10, 2), round(total_income_MA20, 2), round(total_income_MA5*100 / cost, 2), round(total_income_MA10*100 / cost, 2), round(total_income_MA20*100 / cost, 2)], cost, operations_MA5, operations_MA10, operations_MA20
 
 def get_market(code_string):
     '''
@@ -160,6 +170,8 @@ ws = wb.active
 ws.title = "MA_strategys"
 ws.append(["Stock", "MA5", "MA10", "MA20", "MA5", "MA10", "MA20"])
 
+stock_ids = ['600908']
+
 for stock_id in tqdm(stock_ids):
     stock_id = get_market(stock_id)
 
@@ -168,13 +180,28 @@ for stock_id in tqdm(stock_ids):
 
     # print(df.values[-1])          # used to check the stock correctness
 
-    value, cost = MA_strategys(stock_id, df, count)
+    value, cost, operations_MA5, operations_MA10, operations_MA20 = MA_strategys(stock_id, df, count)
+
+    # output the operations
+    operations_MA5_file = open(f'/Volumes/Rone_Chen/投资/Ashare/operations/{stock_id}_operations_MA5.csv', 'w')
+    operations_MA5_file.write("\n".join(operations_MA5) + "\n")
+    operations_MA5_file.close()
+
+    operations_MA10_file = open(f'/Volumes/Rone_Chen/投资/Ashare/operations/{stock_id}_operations_MA10.csv', 'w')
+    operations_MA10_file.write("\n".join(operations_MA10) + "\n")        
+    operations_MA10_file.close()
+
+    operations_MA20_file = open(f'/Volumes/Rone_Chen/投资/Ashare/operations/{stock_id}_operations_MA20.csv', 'w')
+    operations_MA20_file.write("\n".join(operations_MA20) + "\n")
+    operations_MA20_file.close()
+
+
     ws.append(value)
 
     time.sleep(1)
 
 
-wb.save("/Users/ronechen/Rone_Chen/Investment/Ashare/results/MA_strategys.xlsx")
+wb.save("/Volumes/Rone_Chen/投资/Ashare/results/MA_strategys.xlsx")
 
 
 
