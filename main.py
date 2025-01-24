@@ -5,6 +5,7 @@ from tabulate import tabulate
 from read_bank import get_stock_codes
 import time
 from openpyxl import Workbook
+from datetime import datetime
 from tqdm import tqdm
 
 def MA_strategys(stock_id, df, count):
@@ -37,10 +38,10 @@ def MA_strategys(stock_id, df, count):
 
     cost = item_20th['close'] * count
 
-    flag_MA5 = 1            # 0: above, 1: below
-    flag_MA10 = 1           # 0: above, 1: below
-    flag_MA20 = 1           # 0: above, 1: below
-    flag_golden_cross = 1   # 0: above, 1: below
+    flag_MA5 = 0            # 0: below, 1: above
+    flag_MA10 = 0           # 0: below, 1: above
+    flag_MA20 = 0           # 0: below, 1: above
+    flag_golden_cross = 1   # 0: below, 1: above
     total_income_MA20 = 0   # total income of MA20 strategy
     total_income_MA10 = 0   # total income of MA10 strategy
     total_income_MA5 = 0    # total income of MA5 strategy
@@ -56,72 +57,72 @@ def MA_strategys(stock_id, df, count):
         
         #------------------------- Strategy MA5-------------------------
         if strategy_5:
-            if row['close'] > last_MA5 and flag_MA5 == 1:
+            if row['close'] > last_MA5 and flag_MA5 == 0:
                 operations_MA5.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA5 buy: {row['date']}")
                 total_income_MA5 += row['close'] * count
-                flag_MA5 = 0
+                flag_MA5 = 1
             
-            if row['close'] < last_MA5 and flag_MA5 == 0:
+            if row['close'] < last_MA5 and flag_MA5 == 1:
                 operations_MA5.append(f"sell, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA5 sell: {row['date']}")
                 total_income_MA5 -= row['close'] * count
-                flag_MA5 = 1
+                flag_MA5 = 0
 
             last_MA5 = row['MA5']
 
         #------------------------- Strategy MA10-------------------------
         if strategy_10:
-            if row['close'] > last_MA10 and flag_MA10 == 1:
-                operations_MA10.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
+            if row['close'] > last_MA10 and flag_MA10 == 0:
+                operations_MA10.append(f"sell, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA10 buy: {row['date']}")
                 total_income_MA10 += row['close'] * count
-                flag_MA10 = 0
+                flag_MA10 = 1
             
-            if row['close'] < last_MA10 and flag_MA10 == 0:
+            if row['close'] < last_MA10 and flag_MA10 == 1:
                 operations_MA10.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA10 sell: {row['date']}")
                 total_income_MA10 -= row['close'] * count
-                flag_MA10 = 1
+                flag_MA10 = 0
 
             last_MA10 = row['MA10']
 
         #------------------------- Strategy MA20-------------------------
         if strategy_20:
-            if row['close'] > last_MA20 and flag_MA20 == 1:
+            if row['close'] > last_MA20 and flag_MA20 == 0:
                 operations_MA20.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA20 buy: {row['date']}")
                 total_golden_cross -= row['close'] * count
-                flag_MA20 = 0
+                flag_MA20 = 1
             
-            if row['close'] < last_MA20 and flag_MA20 == 0:
-                operations_MA20.append(f"buy, {row['date']}, {last_MA5}, {row['close']}")
+            if row['close'] < last_MA20 and flag_MA20 == 1:
+                operations_MA20.append(f"sell, {row['date']}, {last_MA5}, {row['close']}")
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA20 sell: {row['date']}")
                 total_golden_cross += row['close'] * count
-                flag_MA20 = 1
+                flag_MA20 = 0
             
             last_MA20 = row['MA20']
 
         
         #------------------------- Strategy Golden Death Cross-------------------------
         if strategy_golden_death_cross:
-            if row['MA10'] < row['MA20'] and flag_golden_cross == 1:
+            if row['MA10'] < row['MA20'] and flag_golden_cross == 0:
                 # print(f"{row['close']: >10.2f} is above {row['MA20']: >10.2f}")
                 # print(f"MA20 buy: {row['date']}")
                 total_income_golden_cross += row['close'] * count
-                flag_golden_cross = 0
+                flag_golden_cross = 1
             
-            if row['MA10'] > row['MA20'] and flag_golden_cross == 0:
+            if row['MA10'] > row['MA20'] and flag_golden_cross == 1:
                 # print(f"{row['close']: >10.2f} is below {row['MA20']: >10.2f}")
                 # print(f"MA20 sell: {row['date']}")
                 total_income_golden_cross -= row['close'] * count
-                flag_golden_cross = 1
+                flag_golden_cross = 0
             
             last_MA20 = row['MA20']
     
@@ -175,6 +176,8 @@ stock_ids = ['600908']
 for stock_id in tqdm(stock_ids):
     stock_id = get_market(stock_id)
 
+    stock_id = 'sh000001'
+
     # get the price
     df = get_price(stock_id, frequency='1d', count=days)
 
@@ -201,7 +204,7 @@ for stock_id in tqdm(stock_ids):
     time.sleep(1)
 
 
-wb.save("/Volumes/Rone_Chen/投资/Ashare/results/MA_strategys.xlsx")
+wb.save(f"/Volumes/Rone_Chen/投资/Ashare/results/{datetime.today().date()}_{time.time()}_MA_strategys.xlsx")
 
 
 
