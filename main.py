@@ -2,7 +2,7 @@ from Ashare import get_price
 from MyTT import *
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-from read_bank import get_bank_code
+from read_bank import get_stock_codes
 import time
 from openpyxl import Workbook
 from tqdm import tqdm
@@ -143,10 +143,11 @@ count = 100                     # the number of stocks to buy
 strategy_5 = True               # enable the MA5 strategy
 strategy_10 = True              # enable the MA10 strategy
 strategy_20 = True              # enable the MA20 strategy
-strategy_golden_death_cross = True  # enable the Golden Death Cross strategy
+strategy_golden_death_cross = False  # enable the Golden Death Cross strategy
+stocks_file_path = '/Volumes/Rone_Chen/投资/Ashare/stocks/my_stocks.txt'
 
 # get the stock code
-stock_ids = get_bank_code()
+stock_ids = get_stock_codes(stocks_file_path)
 
 # Data to be displayed in the table
 values = []

@@ -1,6 +1,6 @@
 import os
 
-def get_stock_code(path):
+def get_stock_codes(path):
     file = open(path, 'r')
     lines = file.readlines()
 
@@ -15,5 +15,5 @@ def get_stock_code(path):
     file.close()
     return stock_codes
 
-stock_codes = get_stock_code('/Volumes/Rone_Chen/投资/Ashare/stocks/my_stocks.txt')
+stock_codes = get_stock_codes('/Volumes/Rone_Chen/投资/Ashare/stocks/my_stocks.txt')
 print(stock_codes)
